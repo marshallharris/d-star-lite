@@ -4,7 +4,7 @@ import pygame
 from graph import Node, Graph
 from grid import GridWorld
 from utils import stateNameToCoords
-from d_star_lite import initDStarLite, moveAndRescan
+from d_star_lite import initDStarLite, moveAndRescan, heuristic_from_s
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -23,8 +23,8 @@ colors = {
 }
 
 # This sets the WIDTH and HEIGHT of each grid location
-WIDTH = 40
-HEIGHT = 40
+WIDTH = 100
+HEIGHT = 100
 
 # This sets the margin between each cell
 MARGIN = 5
@@ -46,8 +46,8 @@ grid[1][5] = 1
 # Initialize pygame
 pygame.init()
 
-X_DIM = 12
-Y_DIM = 12
+X_DIM = 4
+Y_DIM = 4
 VIEWING_RANGE = 3
 
 
@@ -67,8 +67,8 @@ clock = pygame.time.Clock()
 
 if __name__ == "__main__":
     graph = GridWorld(X_DIM, Y_DIM)
-    s_start = 'x1y2'
-    s_goal = 'x5y4'
+    s_start = 'x0y0'
+    s_goal = 'x2y1'
     goal_coords = stateNameToCoords(s_goal)
 
     graph.setStart(s_start)
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     s_current = s_start
     pos_coords = stateNameToCoords(s_current)
 
-    basicfont = pygame.font.SysFont('Comic Sans MS', 36)
+    basicfont = pygame.font.SysFont('Comic Sans MS', 11)
 
     # -------- Main Program Loop -----------
     while not done:
@@ -129,8 +129,11 @@ if __name__ == "__main__":
                     # text = basicfont.render(
                     # str(graph.graph[node_name].g), True, (0, 0, 200), (255,
                     # 255, 255))
+                    cell_string = "g: " + str(graph.graph[node_name].g) + ", rhs: " + str(graph.graph[node_name].rhs) + ", h: " + str(heuristic_from_s(graph, node_name, s_current))
+
+
                     text = basicfont.render(
-                        str(graph.graph[node_name].g), True, (0, 0, 200))
+                        cell_string, True, (0, 0, 200))
                     textrect = text.get_rect()
                     textrect.centerx = int(
                         column * (WIDTH + MARGIN) + WIDTH / 2) + MARGIN

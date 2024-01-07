@@ -1,4 +1,5 @@
 import heapq
+import math
 from utils import stateNameToCoords
 
 
@@ -24,42 +25,49 @@ def calculateKey(graph, id, s_current, k_m):
 
 def updateVertex(graph, queue, id, s_current, k_m):
     s_goal = graph.goal
-    if id != s_goal:
+    if id != s_goal: # update rhs for id
         min_rhs = float('inf')
         for i in graph.graph[id].children:
             min_rhs = min(
                 min_rhs, graph.graph[i].g + graph.graph[id].children[i])
         graph.graph[id].rhs = min_rhs
-    id_in_queue = [item for item in queue if id in item]
+    id_in_queue = [item for item in queue if id in item] 
     if id_in_queue != []:
         if len(id_in_queue) != 1:
             raise ValueError('more than one ' + id + ' in the queue!')
-        queue.remove(id_in_queue[0])
-    if graph.graph[id].rhs != graph.graph[id].g:
+        queue.remove(id_in_queue[0]) # remove item from queue
+    if graph.graph[id].rhs != graph.graph[id].g: # re-add item to queue if it's inconsitent
         heapq.heappush(queue, calculateKey(graph, id, s_current, k_m) + (id,))
 
 
 def computeShortestPath(graph, queue, s_start, k_m):
+    iteration = 0
     while (graph.graph[s_start].rhs != graph.graph[s_start].g) or (topKey(queue) < calculateKey(graph, s_start, s_start, k_m)):
         # print(graph.graph[s_start])
         # print('topKey')
         # print(topKey(queue))
         # print('calculateKey')
         # print(calculateKey(graph, s_start, 0))
+
+        print(f"iteration {iteration}, queue {queue}")
+        iteration += 1
         k_old = topKey(queue)
         u = heapq.heappop(queue)[2]
-        if k_old < calculateKey(graph, u, s_start, k_m):
+        print(f"expand node {u}")
+        if k_old < calculateKey(graph, u, s_start, k_m): # when would we enter this state? 
+            print(f"do we ever get here")
             heapq.heappush(queue, calculateKey(graph, u, s_start, k_m) + (u,))
-        elif graph.graph[u].g > graph.graph[u].rhs:
+        elif graph.graph[u].g > graph.graph[u].rhs: #overconsistent
             graph.graph[u].g = graph.graph[u].rhs
             for i in graph.graph[u].parents:
-                updateVertex(graph, queue, i, s_start, k_m)
-        else:
+                updateVertex(graph, queue, i, s_start, k_m) #update rhs of neighbors
+        else: # underconsistent
             graph.graph[u].g = float('inf')
             updateVertex(graph, queue, u, s_start, k_m)
             for i in graph.graph[u].parents:
                 updateVertex(graph, queue, i, s_start, k_m)
         # graph.printGValues()
+    print("exit compute shortest path")
 
 
 def nextInShortestPath(graph, s_current):
