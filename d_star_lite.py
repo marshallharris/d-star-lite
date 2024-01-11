@@ -36,7 +36,8 @@ def updateVertex(graph, queue, id, s_current, k_m):
         if len(id_in_queue) != 1:
             raise ValueError('more than one ' + id + ' in the queue!')
         queue.remove(id_in_queue[0]) # remove item from queue
-    if graph.graph[id].rhs != graph.graph[id].g: # re-add item to queue if it's inconsitent
+    if graph.graph[id].rhs != graph.graph[id].g: # add or re-add item to queue if it's inconsitent
+        print(f"add {id} to queue with key {calculateKey(graph, id, s_current, k_m)}")
         heapq.heappush(queue, calculateKey(graph, id, s_current, k_m) + (id,))
 
 
@@ -119,12 +120,19 @@ def scanForObstacles(graph, queue, s_current, scan_range, k_m):
             for neighbor in graph.graph[state].children:
                 # first time to observe this obstacle where one wasn't before
                 if(graph.graph[state].children[neighbor] != float('inf')):
-                    neighbor_coords = stateNameToCoords(state)
-                    graph.cells[neighbor_coords[1]][neighbor_coords[0]] = -2
+                    state_coords = stateNameToCoords(state)
+                    graph.cells[state_coords[1]][state_coords[0]] = -2
                     graph.graph[neighbor].children[state] = float('inf')
                     graph.graph[state].children[neighbor] = float('inf')
                     updateVertex(graph, queue, state, s_current, k_m)
                     new_obstacle = True
+        elif states_to_update[state] == 0 and allNeigborsHaveAnEdgeWeightOfInfinity(graph, state):
+            for neighbor in graph.graph[state].children:
+                neighbor_coords = stateNameToCoords(neighbor)
+                if graph.cells[neighbor_coords[1]][neighbor_coords[0]] == 0:
+                    graph.graph[neighbor].children[state] = 1
+                    graph.graph[state].children[neighbor] = 1
+                    updateVertex(graph, queue, state, s_current, k_m)
         # elif states_to_update[state] == 0: #cell without obstacle
             # for neighbor in graph.graph[state].children:
                 # if(graph.graph[state].children[neighbor] != float('inf')):
@@ -132,12 +140,22 @@ def scanForObstacles(graph, queue, s_current, scan_range, k_m):
     # print(graph)
     return new_obstacle
 
+def allNeigborsHaveAnEdgeWeightOfInfinity(graph, state):
+    for neighbor in graph.graph[state].children:
+        if graph.graph[state].children[neighbor] !=  float('inf'):
+            return False
+    return True
+
 
 def moveAndRescan(graph, queue, s_current, scan_range, k_m):
     if(s_current == graph.goal):
         return 'goal', k_m
     else:
         s_last = s_current
+        print("scan for extra obstacles")
+        results = scanForObstacles(graph, queue, s_current, scan_range, k_m)
+        print("scan for extra obstacles finished")
+        computeShortestPath(graph, queue, s_current, k_m)
         s_new = nextInShortestPath(graph, s_current)
         new_coords = stateNameToCoords(s_new)
 
@@ -147,7 +165,6 @@ def moveAndRescan(graph, queue, s_current, scan_range, k_m):
         results = scanForObstacles(graph, queue, s_new, scan_range, k_m)
         # print(graph)
         k_m += heuristic_from_s(graph, s_last, s_new)
-        computeShortestPath(graph, queue, s_current, k_m)
 
         return s_new, k_m
 

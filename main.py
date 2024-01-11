@@ -111,6 +111,9 @@ if __name__ == "__main__":
                 # Set that location to one
                 if(graph.cells[row][column] == 0):
                     graph.cells[row][column] = -1
+                elif graph.cells[row][column] < 0:
+                    graph.cells[row][column] = 0
+
 
         # Set the screen background
         screen.fill(BLACK)
