@@ -1,5 +1,6 @@
 import heapq
 import pygame
+import argparse
 
 from graph import Node, Graph
 from grid import GridWorld
@@ -46,15 +47,12 @@ grid[1][5] = 1
 # Initialize pygame
 pygame.init()
 
-X_DIM = 4
-Y_DIM = 4
+
 VIEWING_RANGE = 3
 
 
 # Set the HEIGHT and WIDTH of the screen
-WINDOW_SIZE = [(WIDTH + MARGIN) * X_DIM + MARGIN,
-               (HEIGHT + MARGIN) * Y_DIM + MARGIN]
-screen = pygame.display.set_mode(WINDOW_SIZE)
+
 
 # Set title of screen
 pygame.display.set_caption("D* Lite Path Planning")
@@ -65,10 +63,31 @@ done = False
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Program to visualize motion planning with the D* lite algorithm')
+    parser.add_argument('-d','--dimension', help='The side length of the grid', type=int, default=5)
+    parser.add_argument('-s', '--start', help='The start location in the grid ex: x0y0', default='x0y0')
+    parser.add_argument('-g', '--goal', help='The goal location in the grid ex: x3y2', default='x1y1')
+    parser.add_argument('-v', '--viewrange', help='How far ahead the subject can view', type=int, default=3)
+
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
+
+    args = parse_args()
+
+    X_DIM = args.dimension
+    Y_DIM = args.dimension
+    VIEWING_RANGE = args.viewrange
+
+    WINDOW_SIZE = [(WIDTH + MARGIN) * X_DIM + MARGIN,
+                (HEIGHT + MARGIN) * Y_DIM + MARGIN]
+    screen = pygame.display.set_mode(WINDOW_SIZE)
+
     graph = GridWorld(X_DIM, Y_DIM)
-    s_start = 'x0y0'
-    s_goal = 'x2y1'
+    s_start = args.start
+    s_goal = args.goal
     goal_coords = stateNameToCoords(s_goal)
 
     graph.setStart(s_start)
