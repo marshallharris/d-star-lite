@@ -48,8 +48,6 @@ grid[1][5] = 1
 pygame.init()
 
 
-VIEWING_RANGE = 3
-
 
 # Set the HEIGHT and WIDTH of the screen
 
